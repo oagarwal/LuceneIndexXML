@@ -100,18 +100,41 @@ public class Indexer {
    }   	
 
    private void indexFile(File file) throws IOException, ClassCastException, ClassNotFoundException {
-	  System.out.println("Indexing "+file.getCanonicalPath());
+	  //System.out.println("Indexing "+file.getCanonicalPath());
 	  Document document = getDocument(file);
 	  writer.addDocument(document);
    }   
    
-   public int createIndex(String dataDirPath) throws ClassCastException, ClassNotFoundException, IOException {
+   public int createIndex(String dataDirPath) throws ClassCastException, ClassNotFoundException, IOException, InterruptedException {
 		
 		ArrayList<File> allFiles = new ArrayList<File>();
 		listXMLFiles(dataDirPath,allFiles);
-		for (File file : allFiles){
-			indexFile(file);
+		int numFiles = allFiles.size();
+		int filesPerThread = numFiles/20;
+		ArrayList<Thread> allThreads = new ArrayList<Thread>();
+		for (int threadNum = 0; threadNum < 20; threadNum++){
+			final int innerThreadNum = threadNum;
+			Thread thread = new Thread(){
+				public void run(){
+					int startIdx = innerThreadNum*filesPerThread;
+					int endIdx = innerThreadNum==19?numFiles:(innerThreadNum+1)*filesPerThread;
+					for(int fileNum=startIdx;fileNum<endIdx;fileNum++){
+						try {
+							indexFile(allFiles.get(fileNum));
+						} catch (ClassCastException | ClassNotFoundException | IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			};
+			allThreads.add(thread);
+			thread.start();
 		}
+		
+		for(Thread thread: allThreads){
+			thread.join();
+		}
+		
 		return writer.numDocs();
 	}
 	
@@ -154,6 +177,10 @@ public class Indexer {
 	    }
 	      
 	    return segments;
+	}
+	
+	public void run() {
+		
 	}
 }
 

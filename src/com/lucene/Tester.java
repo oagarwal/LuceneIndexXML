@@ -20,7 +20,9 @@ public class Tester {
 		if(args.length<1)
 			System.out.println("lucene-index.jar create <indexDirPath> <dataDirPath>"
 					+ " \n lucene-index.jar search <indexDirPath> <indexName> <keyword>"
-					+ "\n Index names: fulltext, leadpara, filename, filepath, headline, pubdate");
+					+ "\n Index names: fulltext, leadpara, filename, filepath, headline, pubdate"
+					+ "org, person, location, dsk, classifieridx, classifierongen, classifieronmat,"
+					+ "classifierontax");
 		
 		Tester tester;
 		try {
@@ -38,18 +40,12 @@ public class Tester {
 	      else{
 	    	  System.out.println("Invalid option");
 	      }
-		} catch (IOException e) {
+		} catch (IOException | ParseException | ClassCastException | ClassNotFoundException | InterruptedException e ) {
 	      e.printStackTrace();
-		} catch (ParseException e) {
-	         e.printStackTrace();
-	    } catch (ClassCastException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		}
 	}
 	
-	private void createIndex() throws IOException, ClassCastException, ClassNotFoundException {
+	private void createIndex() throws IOException, ClassCastException, ClassNotFoundException, InterruptedException {
 		indexer = new Indexer(indexDir);
 	    int numIndexed;
 	    long startTime = System.currentTimeMillis();	
