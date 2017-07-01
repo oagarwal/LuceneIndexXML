@@ -1,13 +1,10 @@
 package com.lucene;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -16,21 +13,26 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
+
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
 
 public class Indexer {
 
 	private IndexWriter writer;
+	AbstractSequenceClassifier<CoreLabel>  classifier;
 	
 	@SuppressWarnings("deprecation")
-	public Indexer(String indexDirPath) throws IOException {
+	public Indexer(String indexDirPath) throws IOException, ClassCastException, ClassNotFoundException {
 		Directory indexDirectory = FSDirectory.open(new File(indexDirPath));
 		
 		writer = new IndexWriter(indexDirectory, 
-		         new StandardAnalyzer(Version.LUCENE_36),true, 
+		         new KeywordAnalyzer(),true, 
 		         IndexWriter.MaxFieldLength.UNLIMITED);
+		
+		classifier = CRFClassifier.getClassifier("classifiers/english.all.3class.distsim.crf.ser.gz");
+
 	}
 	
 	public void close() throws CorruptIndexException, IOException {
@@ -44,30 +46,36 @@ public class Indexer {
 	  
       Document document = new Document();
 
-      Field contentField = new Field(LuceneConstants.FULL_TEXT, contents.getFullText(),Field.Store.NO,Field.Index.ANALYZED);
+      /*for(String segment: getNERSegments(contents.getFullText())){
+    	  document.add(new Field(LuceneConstants.FULL_TEXT,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      }
+
+      for(String segment: getNERSegments(contents.getLeadPara())){
+    	  document.add(new Field(LuceneConstants.LEAD_PARA,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      }*/
+      
+      for(String segment: getNERSegments(contents.getHeadline())){
+    	  document.add(new Field(LuceneConstants.HEADLINE,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      }
+      
       Field fileNameField = new Field(LuceneConstants.FILE_NAME, file.getName(),Field.Store.YES,Field.Index.NOT_ANALYZED);
       Field filePathField = new Field(LuceneConstants.FILE_PATH, file.getCanonicalPath(),Field.Store.YES,Field.Index.NOT_ANALYZED);
-      Field leadParaField = new Field(LuceneConstants.LEAD_PARA, contents.getLeadPara(),Field.Store.NO,Field.Index.ANALYZED);
-      Field headLineField = new Field(LuceneConstants.HEADLINE, contents.getHeadline(),Field.Store.NO,Field.Index.ANALYZED);
       Field pubDateField = new Field(LuceneConstants.PUB_DATE, contents.getPubDate(),Field.Store.YES,Field.Index.NOT_ANALYZED);
 
-      document.add(contentField);
       document.add(fileNameField);
       document.add(filePathField);
-      document.add(leadParaField);
-      document.add(headLineField);
       document.add(pubDateField);
       
       return document;
    }   	
 
-   private void indexFile(File file) throws IOException {
+   private void indexFile(File file) throws IOException, ClassCastException, ClassNotFoundException {
 	  System.out.println("Indexing "+file.getCanonicalPath());
 	  Document document = getDocument(file);
 	  writer.addDocument(document);
    }   
    
-   public int createIndex(String dataDirPath) throws IOException{
+   public int createIndex(String dataDirPath) throws ClassCastException, ClassNotFoundException, IOException {
 		
 		ArrayList<File> allFiles = new ArrayList<File>();
 		listXMLFiles(dataDirPath,allFiles);
@@ -88,4 +96,34 @@ public class Indexer {
 			}
 		}
 	}
+	
+	public ArrayList<String> getNERSegments(String text) {
+
+	    String[] output = classifier.classifyToString(text, "tsv", false).split("\\n");
+	    ArrayList<String> segments = new ArrayList<String>();
+	    String token="";
+	    for(String val: output){
+	    	if(!val.isEmpty()){
+	    		String[] tokens = val.split("\\t");
+	    		if(tokens[1].contentEquals("O")){
+	    			if(!token.isEmpty()){
+	    				segments.add(token);
+	    				token = "";
+	    			}
+    				segments.add(tokens[0]);
+	    		} else if (token.isEmpty()){
+	    			token = tokens[0];
+	    		} else {
+	    			token = token + "_" + tokens[0];
+	    		}
+	    	  }
+	      }
+	      
+	    if(!token.isEmpty()){
+	    	segments.add(token);
+	    }
+	      
+	    return segments;
+	}
 }
+

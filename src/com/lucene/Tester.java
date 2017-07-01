@@ -42,10 +42,14 @@ public class Tester {
 	      e.printStackTrace();
 		} catch (ParseException e) {
 	         e.printStackTrace();
-	    }
+	    } catch (ClassCastException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	private void createIndex() throws IOException {
+	private void createIndex() throws IOException, ClassCastException, ClassNotFoundException {
 		indexer = new Indexer(indexDir);
 	    int numIndexed;
 	    long startTime = System.currentTimeMillis();	
@@ -71,3 +75,4 @@ public class Tester {
 	    searcher.close();
 	}
 }
+

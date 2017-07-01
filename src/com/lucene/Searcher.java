@@ -3,6 +3,7 @@ package com.lucene;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
@@ -30,7 +31,7 @@ public class Searcher {
       Directory indexDirectory = FSDirectory.open(new File(indexDirectoryPath));
       indexSearcher = new IndexSearcher(indexDirectory);
       indexSearcher.setDefaultFieldSortScoring(true,false);
-      queryParser = new QueryParser(Version.LUCENE_36, indexName, new StandardAnalyzer(Version.LUCENE_36));
+      queryParser = new QueryParser(Version.LUCENE_36, indexName, new KeywordAnalyzer());
    }
    
    public TopDocs search( String searchQuery) 
