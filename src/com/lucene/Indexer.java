@@ -46,25 +46,55 @@ public class Indexer {
 	  
       Document document = new Document();
 
-      /*for(String segment: getNERSegments(contents.getFullText())){
+      for(String segment: getNERSegments(contents.getFullText())){
     	  document.add(new Field(LuceneConstants.FULL_TEXT,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
 
       for(String segment: getNERSegments(contents.getLeadPara())){
     	  document.add(new Field(LuceneConstants.LEAD_PARA,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
-      }*/
+      }
       
       for(String segment: getNERSegments(contents.getHeadline())){
     	  document.add(new Field(LuceneConstants.HEADLINE,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
       
+      for(String segment: contents.getLocation()){
+    	  document.add(new Field(LuceneConstants.LOCATION,segment,Field.Store.YES,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: contents.getPerson()){
+    	  document.add(new Field(LuceneConstants.PERSON,segment,Field.Store.YES,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: contents.getOrg()){
+    	  document.add(new Field(LuceneConstants.ORG,segment,Field.Store.YES,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: contents.getClassifier_indexing_service()){
+    	  document.add(new Field(LuceneConstants.CLASSIFIER_IDX,segment,Field.Store.YES,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: contents.getClassifier_online_producer_general()){
+    	  document.add(new Field(LuceneConstants.CLASSIFIER_ON_GEN,segment,Field.Store.YES,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: contents.getClassifier_online_producer_material()){
+    	  document.add(new Field(LuceneConstants.CLASSIFIER_ON_MAT,segment,Field.Store.YES,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: contents.getClassifier_online_producer_taxonomic()){
+    	  document.add(new Field(LuceneConstants.CLASSIFIER_ON_TAX,segment,Field.Store.YES,Field.Index.NOT_ANALYZED));
+      }
+      
       Field fileNameField = new Field(LuceneConstants.FILE_NAME, file.getName(),Field.Store.YES,Field.Index.NOT_ANALYZED);
       Field filePathField = new Field(LuceneConstants.FILE_PATH, file.getCanonicalPath(),Field.Store.YES,Field.Index.NOT_ANALYZED);
       Field pubDateField = new Field(LuceneConstants.PUB_DATE, contents.getPubDate(),Field.Store.YES,Field.Index.NOT_ANALYZED);
-
+      Field dskField = new Field(LuceneConstants.DSK, contents.getDsk(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      
       document.add(fileNameField);
       document.add(filePathField);
       document.add(pubDateField);
+      document.add(dskField);
       
       return document;
    }   	
