@@ -17,6 +17,14 @@ public class XmlContents {
 	private String headline;
 	private String pubDate;
 	private String dsk;
+	private String pageNum;
+	private String section;
+	private String column;
+	private String onlineSection;
+	private String pubYear;
+	private String pubMonth;
+	private String pubDay;
+	private String pubDayOfWeek;
 	private ArrayList<String> org;
 	private ArrayList<String> person;
 	private ArrayList<String> location;
@@ -77,20 +85,35 @@ public class XmlContents {
 				if (metaNode.getNodeType() == Node.ELEMENT_NODE) {
 					Element eElement = (Element) metaNode;
 					if(eElement.getAttribute("name").contentEquals("publication_year")){
-						year = eElement.getAttribute("content");
+						this.pubYear = eElement.getAttribute("content");
 					}
 					else if(eElement.getAttribute("name").contentEquals("publication_month")){
-						month = eElement.getAttribute("content");
+						this.pubMonth = eElement.getAttribute("content");
 					}
 					else if(eElement.getAttribute("name").contentEquals("publication_day_of_month")){
-						day = eElement.getAttribute("content");
+						this.pubDay = eElement.getAttribute("content");
 					}
 					else if(eElement.getAttribute("name").contentEquals("dsk")){
 						this.dsk = eElement.getAttribute("content");
 					}
+					else if(eElement.getAttribute("name").contentEquals("publication_day_of_week")){
+						this.pubDayOfWeek = eElement.getAttribute("content");
+					}
+					else if(eElement.getAttribute("name").contentEquals("print_page_number")){
+						this.pageNum = eElement.getAttribute("content");
+					}
+					else if(eElement.getAttribute("name").contentEquals("print_section")){
+						this.section = eElement.getAttribute("content");
+					}
+					else if(eElement.getAttribute("name").contentEquals("print_column")){
+						this.column = eElement.getAttribute("content");
+					}
+					else if(eElement.getAttribute("name").contentEquals("online_sections")){
+						this.onlineSection = eElement.getAttribute("content");
+					}
 				}
 			}
-			this.pubDate = year + "-" + month + "-" + day;
+			this.pubDate = this.pubYear + "-" + this.pubMonth + "-" + this.pubDay;
 			
 			NodeList classifierList = doc.getElementsByTagName("classifier");
 			for (int temp = 0; temp < classifierList.getLength(); temp++) {
@@ -228,5 +251,70 @@ public class XmlContents {
 	public void setClassifier_indexing_service(ArrayList<String> classifier_indexing_service) {
 		this.classifier_indexing_service = classifier_indexing_service;
 	}
+	
+	public String getPageNum() {
+		return pageNum;
+	}
+
+	public void setPageNum(String pageNum) {
+		this.pageNum = pageNum;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	public String getColumn() {
+		return column;
+	}
+
+	public void setColumn(String column) {
+		this.column = column;
+	}
+
+	public String getOnlineSection() {
+		return onlineSection;
+	}
+
+	public void setOnlineSection(String onlineSection) {
+		this.onlineSection = onlineSection;
+	}
+
+	public String getPubYear() {
+		return pubYear;
+	}
+
+	public void setPubYear(String pubYear) {
+		this.pubYear = pubYear;
+	}
+
+	public String getPubMonth() {
+		return pubMonth;
+	}
+
+	public void setPubMonth(String pubMonth) {
+		this.pubMonth = pubMonth;
+	}
+
+	public String getPubDay() {
+		return pubDay;
+	}
+
+	public void setPubDay(String pubDay) {
+		this.pubDay = pubDay;
+	}
+
+	public String getPubDayOfWeek() {
+		return pubDayOfWeek;
+	}
+
+	public void setPubDayOfWeek(String pubDayOfWeek) {
+		this.pubDayOfWeek = pubDayOfWeek;
+	}
+
 }
 

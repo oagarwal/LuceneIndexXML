@@ -55,6 +55,7 @@ public class Indexer {
       }
       
       for(String segment: getNERSegments(contents.getHeadline())){
+    	  System.out.println(segment);
     	  document.add(new Field(LuceneConstants.HEADLINE,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
       
@@ -90,11 +91,27 @@ public class Indexer {
       Field filePathField = new Field(LuceneConstants.FILE_PATH, file.getCanonicalPath(),Field.Store.YES,Field.Index.NOT_ANALYZED);
       Field pubDateField = new Field(LuceneConstants.PUB_DATE, contents.getPubDate(),Field.Store.YES,Field.Index.NOT_ANALYZED);
       Field dskField = new Field(LuceneConstants.DSK, contents.getDsk(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      Field pubYearField  = new Field(LuceneConstants.PUB_YEAR,contents.getPubYear(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      Field pubMonthField = new Field(LuceneConstants.PUB_MONTH,contents.getPubMonth(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      Field pubDayField = new Field(LuceneConstants.PUB_DAY,contents.getPubDay(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      Field pubDayOfWeekField = new Field(LuceneConstants.PUB_DAY_OF_WEEK,contents.getPubDayOfWeek(),Field.Store.YES,Field.Index.NOT_ANALYZED);;
+      Field pageNumField = new Field(LuceneConstants.PAGE_NUM,contents.getPageNum(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      Field sectionField = new Field(LuceneConstants.SECTION,contents.getSection(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      Field columnField = new Field(LuceneConstants.COLUMN,contents.getColumn(),Field.Store.YES,Field.Index.NOT_ANALYZED);
+      Field onlineSectionField = new Field(LuceneConstants.ONLINE_SECTION,contents.getOnlineSection(),Field.Store.YES,Field.Index.NOT_ANALYZED);
       
       document.add(fileNameField);
       document.add(filePathField);
       document.add(pubDateField);
       document.add(dskField);
+      document.add(pubYearField);
+      document.add(pubMonthField);
+      document.add(pubDayField);
+      document.add(pubDayOfWeekField);
+      document.add(pageNumField);
+      document.add(sectionField);
+      document.add(columnField);
+      document.add(onlineSectionField);
       
       return document;
    }   	
@@ -160,10 +177,10 @@ public class Indexer {
 	    		String[] tokens = val.split("\\t");
 	    		if(tokens[1].contentEquals("O")){
 	    			if(!token.isEmpty()){
-	    				segments.add(token);
+	    				segments.add(token.toLowerCase());
 	    				token = "";
 	    			}
-    				segments.add(tokens[0]);
+    				segments.add(tokens[0].toLowerCase());
 	    		} else if (token.isEmpty()){
 	    			token = tokens[0];
 	    		} else {
@@ -173,7 +190,7 @@ public class Indexer {
 	      }
 	      
 	    if(!token.isEmpty()){
-	    	segments.add(token);
+	    	segments.add(token.toLowerCase());
 	    }
 	      
 	    return segments;
