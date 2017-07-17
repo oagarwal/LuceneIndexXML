@@ -6,6 +6,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.commons.cli.*;
 
 public class Tester {
 
@@ -15,30 +16,61 @@ public class Tester {
 	String indexName;
 	Searcher searcher;
 	   
-	public static void main(String[] args){
+	public static void main(String[] args) {
 		
-		if(args.length<1)
-			System.out.println("lucene-index.jar create <indexDirPath> <dataDirPath>"
-					+ " \n lucene-index.jar search <indexDirPath> <indexName> <keyword>"
-					+ "\n Index names: fulltext, leadpara, filename, filepath, headline, pubdate"
-					+ "org, person, location, dsk, classifieridx, classifierongen, classifieronmat,"
-					+ "classifierontax");
+		Options options = new Options();
+		Option option = new Option("o", "option", true, "Valid values are create and search");
+		option.setRequired(true);
+	    options.addOption(option);
+	    
+	    Option indexDir = new Option("i", "indexDir", true, "Index directory");
+	    indexDir.setRequired(true);
+	    options.addOption(indexDir);
+	    
+	    Option dataDir = new Option("d", "dataDir", true, "Data directory");
+	    dataDir.setRequired(false);
+	    options.addOption(dataDir);
+	    
+	    Option indexName = new Option("n", "indexName", true, "Valid values are fulltext, leadpara, filename, filepath, headline, pubdate"
+	    		+ "org, person, location, dsk, classifieridx, classifierongen, classifieronmat, classifierontax, pubyear, pubmonth, pubday"
+	    		+ "pubdayofweek, section, column, pagenum, onlinesection");
+	    indexName.setRequired(false);
+	    options.addOption(indexName);
+	    
+	    Option searchTerm = new Option("t", "searchTerm", true, "Term to search");
+	    searchTerm.setRequired(false);
+	    options.addOption(searchTerm);
+	    
+	    CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (org.apache.commons.cli.ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("lucene-index-nytimes", options);
+            System.exit(1);
+            return;
+        } 
+
+        String task = cmd.getOptionValue("option");
 		
 		Tester tester;
 		try {
 	      tester = new Tester();
-	      if(args[0].contentEquals("create")){
-	    	  tester.indexDir = args[1];
-	    	  tester.dataDir = args[2];
+	      if(task.contentEquals("create")){
+	    	  tester.indexDir = cmd.getOptionValue("indexDir");
+	    	  tester.dataDir = cmd.getOptionValue("dataDir");
 	    	  tester.createIndex();
 	      }
-	      else if(args[0].contentEquals("search")){
-	    	  tester.indexDir = args[1];
-	    	  tester.indexName = args[2];
-	    	  tester.search(args[3]);
+	      else if(task.contentEquals("search")){
+	    	  tester.indexDir = cmd.getOptionValue("indexDir");
+	    	  tester.indexName = cmd.getOptionValue("indexName");
+	    	  tester.search(cmd.getOptionValue("searchTerm"));
 	      }
 	      else{
-	    	  System.out.println("Invalid option");
+	    	  formatter.printHelp("lucene-index-nytimes", options);
 	      }
 		} catch (IOException | ParseException | ClassCastException | ClassNotFoundException | InterruptedException e ) {
 	      e.printStackTrace();
