@@ -1,6 +1,11 @@
 package com.lucene;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.ParseException;
@@ -19,7 +24,7 @@ public class Tester {
 	public static void main(String[] args) {
 		
 		Options options = new Options();
-		Option option = new Option("o", "option", true, "Valid values are create and search");
+		Option option = new Option("p", "option", true, "Valid values are create and search");
 		option.setRequired(true);
 	    options.addOption(option);
 	    
@@ -40,6 +45,18 @@ public class Tester {
 	    Option searchTerm = new Option("t", "searchTerm", true, "Term to search");
 	    searchTerm.setRequired(false);
 	    options.addOption(searchTerm);
+	    
+	    Option isFile = new Option("y", "isFile", false, "Should file be used for search terms");
+	    isFile.setRequired(false);
+	    options.addOption(isFile);
+	    
+	    Option fileName = new Option("f", "fileName", true, "Name of the file containing the search terms. A new term in every line.");
+	    fileName.setRequired(false);
+	    options.addOption(fileName);
+	    
+	    Option outputFile = new Option("o", "outputFile", true, "Output file name");
+	    outputFile.setRequired(false);
+	    options.addOption(outputFile);
 	    
 	    CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -67,7 +84,12 @@ public class Tester {
 	      else if(task.contentEquals("search")){
 	    	  tester.indexDir = cmd.getOptionValue("indexDir");
 	    	  tester.indexName = cmd.getOptionValue("indexName");
-	    	  tester.search(cmd.getOptionValue("searchTerm"));
+	    	  if(cmd.hasOption("isFile")){
+	    		tester.search(cmd.getOptionValue("fileName"),true,cmd.getOptionValue("outputFile"));  
+	    	  }
+	    	  else {
+	    		  tester.search(cmd.getOptionValue("searchTerm"),false,cmd.getOptionValue("outputFile"));
+	    	  }
 	      }
 	      else{
 	    	  formatter.printHelp("lucene-index-nytimes", options);
@@ -87,18 +109,48 @@ public class Tester {
 	    System.out.println(numIndexed+" File indexed, time taken: "+(endTime-startTime)+" ms");	
 	}
 	
-	private void search(String searchQuery) throws IOException, ParseException {
+	private void search(String searchQuery, boolean isFile, String outputFile) throws IOException, ParseException {
 	    searcher = new Searcher(indexDir,indexName);
-	    long startTime = System.currentTimeMillis();
-	    TopDocs hits = searcher.search(searchQuery);
-	    long endTime = System.currentTimeMillis();
+	    if(isFile){
+	    	BufferedReader br = new BufferedReader(new FileReader(searchQuery));
+	    	FileWriter fw = new FileWriter(new File(outputFile));
+	    	String line;
+	    	while ((line = br.readLine()) != null) {
+	    		fw.write(line);
+	    		line = line.replaceAll(" ", "_");
+	    		
+	    		HashMap<Integer,Integer> hs = new HashMap<Integer,Integer>();
+	    		for(int i=1987; i<=2007; i++){
+	    			hs.put(i, 0);
+	    		}
+	    		
+	    		TopDocs hits = searcher.search(line);
+	    		for(ScoreDoc scoreDoc : hits.scoreDocs) {
+	    			Document doc = searcher.getDocument(scoreDoc);
+	    			int year = Integer.parseInt(doc.get(LuceneConstants.PUB_YEAR));
+	    			hs.put(year,hs.get(year)+1);
+	    		}
+	    		
+	    		for(int i=1987; i<=2007; i++){
+	    			fw.write("," + hs.get(i).toString());	
+	    		}
+	    		fw.write("\n");
+	    	}
+	    	br.close();
+	    	fw.close();
+	    }
+	    else {
+	    	long startTime = System.currentTimeMillis();
+	    	TopDocs hits = searcher.search(searchQuery);
+	    	long endTime = System.currentTimeMillis();
 		   
-	    System.out.println(hits.totalHits + " hits for the word. Time :" + (endTime - startTime));
-	    for(ScoreDoc scoreDoc : hits.scoreDocs) {
-	       Document doc = searcher.getDocument(scoreDoc);
-	       System.out.println("File: "+ doc.get(LuceneConstants.FILE_PATH) 
+	    	System.out.println(hits.totalHits + " hits for the word. Time :" + (endTime - startTime));
+	    	for(ScoreDoc scoreDoc : hits.scoreDocs) {
+	    		Document doc = searcher.getDocument(scoreDoc);
+	    		System.out.println("File: "+ doc.get(LuceneConstants.FILE_PATH) 
 	       						+ ", Score: " + scoreDoc.score
 	       						+ ", Date: " + doc.get(LuceneConstants.PUB_DATE));
+	    	}
 	    }
 	    searcher.close();
 	}
