@@ -14,7 +14,8 @@ public class XmlContents {
 	
 	private String leadPara;
 	private String fullText;
-	private String headline;
+	private String headline1;
+	private String headline2;
 	private String pubDate;
 	private String dsk;
 	private String pageNum;
@@ -37,8 +38,17 @@ public class XmlContents {
 		this.leadPara="";
 		this.fullText="";
 		this.pubDate="";
-		this.headline="";
+		this.headline1="";
+		this.headline2="";
 		this.dsk ="";
+		this.pageNum="";
+		this.section="";
+		this.column="";
+		this.onlineSection="";
+		this.pubYear="";
+		this.pubMonth="";
+		this.pubDay="";
+		this.pubDayOfWeek="";
 		this.org = new ArrayList<String>();
 		this.person = new ArrayList<String>();
 		this.location = new ArrayList<String>();
@@ -66,19 +76,18 @@ public class XmlContents {
 					if(eElement.getAttribute("class").contentEquals("lead_paragraph")){
 						NodeList textList = eElement.getElementsByTagName("p");
 						for(int i=0;i< textList.getLength();i++){
-							this.leadPara += textList.item(i).getTextContent();
+							this.leadPara = this.leadPara + " " + textList.item(i).getTextContent();
 						}
 					}
 					else if(eElement.getAttribute("class").contentEquals("full_text")){
 						NodeList textList = eElement.getElementsByTagName("p");
 						for(int i=0;i< textList.getLength();i++){
-							this.fullText += textList.item(i).getTextContent();
+							this.fullText = this.fullText + " " + textList.item(i).getTextContent();
 						}
 					}
 				}
 			}
 			
-			String month="",day="",year="";
 			NodeList metaList = doc.getElementsByTagName("meta");
 			for (int temp = 0; temp < metaList.getLength(); temp++) {
 				Node metaNode = metaList.item(temp);
@@ -137,7 +146,10 @@ public class XmlContents {
 				}
 			}
 					
-			this.headline = doc.getElementsByTagName("title").item(0).getTextContent();
+			this.headline1 = doc.getElementsByTagName("hl1").item(0).getTextContent();
+			
+			if(doc.getElementsByTagName("hl2").getLength() > 0)
+				this.headline2 = doc.getElementsByTagName("hl2").item(0).getTextContent();
 			
 			NodeList tempList = doc.getElementsByTagName("org");
 			for (int temp = 0; temp < tempList.getLength(); temp++)				
@@ -173,12 +185,20 @@ public class XmlContents {
 		this.fullText = fullText;
 	}
 	
-	public String getHeadline() {
-		return headline;
+	public String getHeadline1() {
+		return headline1;
 	}
 	
-	public void setHeadline(String headline) {
-		this.headline = headline;
+	public void setHeadline1(String headline1) {
+		this.headline1 = headline1;
+	}
+
+	public String getHeadline2() {
+		return headline2;
+	}
+	
+	public void setHeadline2(String headline2) {
+		this.headline2 = headline2;
 	}
 	
 	public String getPubDate() {

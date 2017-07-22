@@ -54,9 +54,12 @@ public class Indexer {
     	  document.add(new Field(LuceneConstants.LEAD_PARA,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
       
-      for(String segment: getNERSegments(contents.getHeadline())){
-    	  System.out.println(segment);
-    	  document.add(new Field(LuceneConstants.HEADLINE,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      for(String segment: getNERSegments(contents.getHeadline1())){
+    	  document.add(new Field(LuceneConstants.HEADLINE1,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: getNERSegments(contents.getHeadline2())){
+    	  document.add(new Field(LuceneConstants.HEADLINE2,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
       
       for(String segment: contents.getLocation()){
