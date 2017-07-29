@@ -11,6 +11,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+
+import jdk.nashorn.internal.parser.Token;
+
 import org.apache.commons.cli.*;
 
 public class Tester {
@@ -38,7 +41,7 @@ public class Tester {
 	    
 	    Option indexName = new Option("n", "indexName", true, "Valid values are fulltext, leadpara, filename, filepath, headline, pubdate"
 	    		+ "org, person, location, dsk, classifieridx, classifierongen, classifieronmat, classifierontax, pubyear, pubmonth, pubday"
-	    		+ "pubdayofweek, section, column, pagenum, onlinesection");
+	    		+ "pubdayofweek, section, column, pagenum, onlinesection, persons, organizations, locations");
 	    indexName.setRequired(false);
 	    options.addOption(indexName);
 	    
@@ -117,7 +120,7 @@ public class Tester {
 	    	String line;
 	    	while ((line = br.readLine()) != null) {
 	    		fw.write(line);
-	    		line = line.replaceAll(" ", "_");
+	    		line = line.replaceAll(" ", "_").toLowerCase();
 	    		
 	    		HashMap<Integer,Integer> hs = new HashMap<Integer,Integer>();
 	    		for(int i=1987; i<=2007; i++){
@@ -127,7 +130,8 @@ public class Tester {
 	    		TopDocs hits = searcher.search(line);
 	    		for(ScoreDoc scoreDoc : hits.scoreDocs) {
 	    			Document doc = searcher.getDocument(scoreDoc);
-	    			int year = Integer.parseInt(doc.get(LuceneConstants.PUB_YEAR));
+	    			String[] tokens = doc.get(LuceneConstants.FILE_PATH).split("/");
+	    			int year = Integer.parseInt(tokens[tokens.length-4]);
 	    			hs.put(year,hs.get(year)+1);
 	    		}
 	    		

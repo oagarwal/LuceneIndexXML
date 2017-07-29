@@ -46,20 +46,44 @@ public class Indexer {
 	  
       Document document = new Document();
 
-      for(String segment: getNERSegments(contents.getFullText())){
+      ArrayList<String> all = new ArrayList<String>();
+      ArrayList<String> persons = new ArrayList<String>();
+      ArrayList<String> orgs = new ArrayList<String>();
+      ArrayList<String> locs = new ArrayList<String>();
+      
+      getNERSegments(contents.getFullText(),all,persons,orgs,locs);
+      for(String segment: all){
     	  document.add(new Field(LuceneConstants.FULL_TEXT,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
 
-      for(String segment: getNERSegments(contents.getLeadPara())){
+      all = new ArrayList<String>();
+      getNERSegments(contents.getLeadPara(),all,persons,orgs,locs);
+      for(String segment: all){
     	  document.add(new Field(LuceneConstants.LEAD_PARA,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
       
-      for(String segment: getNERSegments(contents.getHeadline1())){
+      all = new ArrayList<String>();
+      getNERSegments(contents.getHeadline1(),all,persons,orgs,locs);
+      for(String segment: all){
     	  document.add(new Field(LuceneConstants.HEADLINE1,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
       
-      for(String segment: getNERSegments(contents.getHeadline2())){
+      all = new ArrayList<String>();
+      getNERSegments(contents.getHeadline2(),all,persons,orgs,locs);
+      for(String segment: all){
     	  document.add(new Field(LuceneConstants.HEADLINE2,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: persons){
+    	  document.add(new Field(LuceneConstants.NE_PERSON,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: orgs){
+    	  document.add(new Field(LuceneConstants.NE_ORG,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
+      }
+      
+      for(String segment: locs){
+    	  document.add(new Field(LuceneConstants.NE_LOCATION,segment,Field.Store.NO,Field.Index.NOT_ANALYZED));
       }
       
       for(String segment: contents.getLocation()){
@@ -170,22 +194,32 @@ public class Indexer {
 		}
 	}
 	
-	public ArrayList<String> getNERSegments(String text) {
+    public void getNERSegments(String text, ArrayList<String> all, ArrayList<String> persons, ArrayList<String> orgs, ArrayList<String> locs) {
 
 	    String[] output = classifier.classifyToString(text, "tsv", false).split("\\n");
-	    ArrayList<String> segments = new ArrayList<String>();
-	    String token="";
+	    String token="",tag="";
 	    for(String val: output){
 	    	if(!val.isEmpty()){
 	    		String[] tokens = val.split("\\t");
 	    		if(tokens[1].contentEquals("O")){
-	    			if(!token.isEmpty()){
-	    				segments.add(token.toLowerCase());
+	    			if(!token.isEmpty()) {
+	    				if(tag.contentEquals("PERSON")){
+	    					persons.add(token.toLowerCase());
+	    				}
+	    				else if(tag.contentEquals("ORGANIZATION")){
+	    					orgs.add(token.toLowerCase());
+	    				}
+	    				else if(tag.contentEquals("LOCATION")){
+	    					locs.add(token.toLowerCase());
+	    				}
+	    				all.add(token.toLowerCase());
 	    				token = "";
+	    				tag = "";
 	    			}
-    				segments.add(tokens[0].toLowerCase());
+    				all.add(tokens[0].toLowerCase());
 	    		} else if (token.isEmpty()){
 	    			token = tokens[0];
+	    			tag = tokens[1];
 	    		} else {
 	    			token = token + "_" + tokens[0];
 	    		}
@@ -193,14 +227,18 @@ public class Indexer {
 	      }
 	      
 	    if(!token.isEmpty()){
-	    	segments.add(token.toLowerCase());
+	    	all.add(token.toLowerCase());
+	    	if(tag.contentEquals("PERSON")){
+				persons.add(token.toLowerCase());
+			}
+			else if(tag.contentEquals("ORGANIZATION")){
+				orgs.add(token.toLowerCase());
+			}
+			else if(tag.contentEquals("LOCATION")){
+				locs.add(token.toLowerCase());
+			}
 	    }
 	      
-	    return segments;
-	}
-	
-	public void run() {
-		
 	}
 }
 

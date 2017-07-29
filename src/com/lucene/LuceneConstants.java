@@ -2,6 +2,9 @@ package com.lucene;
 
 public class LuceneConstants {
    public static final String FULL_TEXT = "fulltext";
+   public static final String NE_PERSON = "persons";
+   public static final String NE_ORG = "organizations";
+   public static final String NE_LOCATION = "locations";
    public static final String LEAD_PARA = "leadpara";
    public static final String FILE_NAME = "filename";
    public static final String FILE_PATH = "filepath";
